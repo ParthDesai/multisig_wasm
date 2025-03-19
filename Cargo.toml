@@ -46,6 +46,8 @@ blst = "0.3.14"
 schemars = "0.8.16"
 serde = { version = "1.0.197", default-features = false, features = ["derive"] }
 thiserror = { version = "1.0.58" }
+bit-vec = { version = "0.8", default-features = false }
 
 [dev-dependencies]
 cw-multi-test = "2.0.0"
+rand = { version = "0.8.5", default-features = true }
