@@ -121,7 +121,8 @@ pub fn execute(
                 return Err(ContractError::InvalidSignature);
             }
             CURRENT_KEYSET.update(deps.storage, |mut current_key_set| {
-                let _public_key = try_parse_public_key(&update_key_set.public_keys)?;
+                let public_keys = try_parse_public_key(&update_key_set.public_keys)?;
+                check_for_duplicates(&public_keys)?;
 
                 if update_key_set.min_keys_needed == 0 {
                     return Err(ContractError::InvalidMinKeysNeeded {
@@ -151,7 +152,7 @@ mod tests {
     // We need to test instantiate
     // and execute method and
     // check storage to make sure state transition is correct
-    
+
     // We also need to test edge cases that are checked + few scenarios where
     // we try to do replay attack and expect it to be prevented by usage of nonce
 }
