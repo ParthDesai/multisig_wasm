@@ -147,4 +147,8 @@ pub fn query(_deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    // We need to test instantiate
+    // and execute method and
+    // check storage
+}

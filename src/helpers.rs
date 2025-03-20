@@ -1,11 +1,11 @@
-use std::collections::BTreeSet;
 use blst::min_pk::PublicKey;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
 
-use cosmwasm_std::{to_json_binary, Addr, Binary, CosmosMsg, StdResult, WasmMsg};
-use crate::ContractError;
 use crate::msg::ExecuteMsg;
+use crate::ContractError;
+use cosmwasm_std::{to_json_binary, Addr, Binary, CosmosMsg, StdResult, WasmMsg};
 
 /// CwTemplateContract is a wrapper around Addr that provides a lot of helpers
 /// for working with this.
@@ -27,7 +27,6 @@ impl CwTemplateContract {
         .into())
     }
 }
-
 
 pub fn check_for_duplicates(public_keys: &Vec<PublicKey>) -> Result<(), ContractError> {
     let mut public_key_set_for_duplication_detection = BTreeSet::new();
@@ -76,3 +75,9 @@ pub fn try_parse_public_key(public_key_set: &Vec<Binary>) -> Result<Vec<PublicKe
     Ok(parsed_public_keys)
 }
 
+#[cfg(test)]
+mod tests {
+    // We need to test try_parse_public_key and
+    // check_for_duplicates to make sure
+    // they work correctly.
+}
