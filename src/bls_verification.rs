@@ -141,6 +141,35 @@ mod tests {
 
         let bitmap = create_bitmap(100, &random_participation).unwrap();
 
+        let result = verify_signature(message, 2, &[], bitmap.clone(), &agg_sig.to_signature());
+        assert!(!result.is_ok());
+        assert_eq!(
+            result.err().unwrap(),
+            String::from("No public keys provided")
+        );
+
+        let mut extra_pks = pks.clone();
+        extra_pks.push(PublicKey::default());
+        let result = verify_signature(
+            message,
+            50,
+            &extra_pks,
+            bitmap.clone(),
+            &agg_sig.to_signature(),
+        );
+        assert!(!result.is_ok());
+        assert_eq!(
+            result.err().unwrap(),
+            String::from("Smaller bitvec supplied")
+        );
+
+        let result = verify_signature(message, 60, &pks, bitmap.clone(), &agg_sig.to_signature());
+        assert!(!result.is_ok());
+        assert_eq!(
+            result.err().unwrap(),
+            String::from("Less participation than min needed")
+        );
+
         // Verify
         let result = verify_signature(message, 50, &pks, bitmap, &agg_sig.to_signature());
         assert!(result.is_ok());
@@ -149,7 +178,7 @@ mod tests {
         // Test with wrong bitmap
         random_participation[0] = sk_index_not_participating;
         let wrong_bitmap = create_bitmap(100, &random_participation).unwrap(); // Indices 0 and 1 (sk1 and sk2)
-        let result = verify_signature(message, 2, &pks, wrong_bitmap, &agg_sig.to_signature());
+        let result = verify_signature(message, 50, &pks, wrong_bitmap, &agg_sig.to_signature());
         assert!(result.is_ok());
         assert!(!result.unwrap());
     }
