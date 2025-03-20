@@ -10,6 +10,9 @@ pub enum ContractError {
     #[error("Unable to decode public key at {}", .pub_key_index)]
     PublicKeyDecodeError { pub_key_index: usize },
 
+    #[error("Duplicate public key was found at {}", .pub_key_index)]
+    PublicKeyDuplicated { pub_key_index: usize },
+
     #[error("Unable to verify signature, error: {}", .verification_error)]
     SignatureVerificationError { verification_error: String },
 

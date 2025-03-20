@@ -5,6 +5,7 @@ use blst::min_pk::{PublicKey, Signature};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use std::collections::BTreeSet;
 // use cw2::set_contract_version;
 
 use crate::error::ContractError;
@@ -24,13 +25,8 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let mut public_key_iterator = msg.initial_public_keys.iter();
-    if public_key_iterator.any(|public_key| PublicKey::uncompress(public_key).is_err()) {
-        let index_of_key = msg.initial_public_keys.len() - public_key_iterator.len();
-        return Err(ContractError::PublicKeyDecodeError {
-            pub_key_index: index_of_key,
-        });
-    }
+    let public_keys = try_parse_public_key(&msg.initial_public_keys)?;
+    check_for_duplicates(&public_keys)?;
 
     if msg.min_keys_needed == 0 {
         return Err(ContractError::InvalidMinKeysNeeded {
@@ -50,7 +46,54 @@ pub fn instantiate(
     Ok(Response::new())
 }
 
-pub fn verify_signature_payload<P: Payload + serde::Serialize>(
+fn check_for_duplicates(public_keys: &Vec<PublicKey>) -> Result<(), ContractError> {
+    let mut public_key_set_for_duplication_detection = BTreeSet::new();
+
+    let non_duplicate_elements: Vec<usize> = public_keys
+        .iter()
+        .enumerate()
+        .map_while(|(i, public_key)| {
+            let compressed_public_key = public_key.compress();
+            if public_key_set_for_duplication_detection.contains(&compressed_public_key) {
+                return None;
+            }
+            public_key_set_for_duplication_detection.insert(compressed_public_key);
+            Some(i)
+        })
+        .collect();
+
+    if public_keys.len() != non_duplicate_elements.len() {
+        return Err(ContractError::PublicKeyDuplicated {
+            pub_key_index: public_keys.len() - non_duplicate_elements.len(),
+        });
+    }
+
+    Ok(())
+}
+
+fn try_parse_public_key(public_key_set: &Vec<Binary>) -> Result<Vec<PublicKey>, ContractError> {
+    let parsed_public_keys: Vec<PublicKey> = public_key_set
+        .iter()
+        .map_while(|public_key| {
+            let maybe_parsed_public_key = PublicKey::uncompress(public_key);
+            if let Ok(parsed_public_key) = maybe_parsed_public_key {
+                Some(parsed_public_key)
+            } else {
+                return None;
+            }
+        })
+        .collect();
+
+    if parsed_public_keys.len() != public_key_set.len() {
+        return Err(ContractError::PublicKeyDecodeError {
+            pub_key_index: public_key_set.len() - parsed_public_keys.len(),
+        });
+    }
+
+    Ok(parsed_public_keys)
+}
+
+fn verify_signature_payload<P: Payload + serde::Serialize>(
     deps: &DepsMut,
     bit_vec: Binary,
     signature: Binary,
@@ -76,22 +119,7 @@ pub fn verify_signature_payload<P: Payload + serde::Serialize>(
         });
     }
 
-    let mut maybe_public_keys = current_serialized_keyset
-        .public_keys
-        .iter()
-        .map(|serialized_key| PublicKey::uncompress(serialized_key))
-        .collect::<Vec<Result<_, _>>>();
-
-    let mut public_keys = vec![];
-    for (index, maybe_public_key) in maybe_public_keys.drain(..).enumerate() {
-        if let Ok(public_key) = maybe_public_key {
-            public_keys.push(public_key);
-        } else {
-            return Err(ContractError::PublicKeyDecodeError {
-                pub_key_index: index,
-            });
-        }
-    }
+    let public_keys = try_parse_public_key(&current_serialized_keyset.public_keys)?;
 
     let serialized_payload =
         serde_json::to_vec(&payload).map_err(|e| SignaturePayloadDecodeError { error: e })?;
@@ -140,14 +168,7 @@ pub fn execute(
                 return Err(ContractError::InvalidSignature);
             }
             CURRENT_KEYSET.update(deps.storage, |mut current_key_set| {
-                let mut public_key_iterator = update_key_set.public_keys.iter();
-                if public_key_iterator.any(|public_key| PublicKey::uncompress(public_key).is_err())
-                {
-                    let index_of_key = update_key_set.public_keys.len() - public_key_iterator.len();
-                    return Err(ContractError::PublicKeyDecodeError {
-                        pub_key_index: index_of_key,
-                    });
-                }
+                let _public_key = try_parse_public_key(&update_key_set.public_keys)?;
 
                 if update_key_set.min_keys_needed == 0 {
                     return Err(ContractError::InvalidMinKeysNeeded {
