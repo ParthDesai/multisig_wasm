@@ -1,35 +1,63 @@
-use bit_vec::BitVec;
-use blst::min_pk::PublicKey;
-use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Binary, HexBinary, WasmMsg};
-use serde::Serialize;
 use crate::types::SerializableKeySet;
+use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_std::{Binary, WasmMsg};
 
 #[cw_serde]
 pub struct InstantiateMsg {
-    max_key_length: usize,
-    min_keys_needed: usize,
-    initial_public_keys: Vec<Binary>,
+    pub min_keys_needed: u64,
+    pub initial_public_keys: Vec<Binary>,
+}
+
+pub trait Payload {
+    fn get_nonce(&self) -> u64;
+    fn get_serialized_payload(&self) -> serde_json::Result<Vec<u8>>;
 }
 
 #[cw_serde]
 pub struct CallPayload {
-    nonce: u64,
-    msg: WasmMsg
+    pub nonce: u64,
+    pub msg: WasmMsg,
 }
 
+impl Payload for CallPayload {
+    fn get_nonce(&self) -> u64 {
+        self.nonce
+    }
+
+    fn get_serialized_payload(&self) -> serde_json::Result<Vec<u8>> {
+        serde_json::to_vec(&self)
+    }
+}
+
+#[cw_serde]
+pub struct UpdateKeySetPayload {
+    pub nonce: u64,
+    pub min_keys_needed: u64,
+    pub public_keys: Vec<Binary>,
+}
+
+impl Payload for UpdateKeySetPayload {
+    fn get_nonce(&self) -> u64 {
+        self.nonce
+    }
+
+    fn get_serialized_payload(&self) -> serde_json::Result<Vec<u8>> {
+        serde_json::to_vec(&self)
+    }
+}
 
 #[cw_serde]
 pub enum ExecuteMsg {
     CallContracts {
         bit_vec: Binary,
         signature: Binary,
-        call: CallPayload
+        call: CallPayload,
     },
     UpdateKeySet {
-        min_keys_needed: usize,
-        new_public_keys: Vec<Binary>,
-    }
+        bit_vec: Binary,
+        signature: Binary,
+        update_key_set: UpdateKeySetPayload,
+    },
 }
 
 #[cw_serde]
@@ -38,6 +66,5 @@ pub enum QueryMsg {
     #[returns(SerializableKeySet)]
     GetKeySet,
     #[returns(u64)]
-    GetNonce
+    GetNonce,
 }
-

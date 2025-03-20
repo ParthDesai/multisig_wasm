@@ -1,6 +1,6 @@
 use crate::ContractError;
 use bit_vec::BitVec;
-use blst::min_pk::{AggregatePublicKey, AggregateSignature};
+use blst::min_pk::AggregatePublicKey;
 use blst::{
     min_pk::{PublicKey, Signature},
     BLST_ERROR,
@@ -79,7 +79,10 @@ pub fn create_bitmap(
 
     for participating_index in participating_indices {
         if *participating_index >= bitvec.len() {
-            return Err(ContractError::Unauthorized {});
+            return Err(ContractError::IndexOutOfBounds {
+                index: *participating_index as u64,
+                bit_vec_length: bitvec.len() as u64,
+            });
         }
 
         bitvec.set(*participating_index, true);
