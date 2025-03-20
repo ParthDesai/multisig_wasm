@@ -150,5 +150,8 @@ pub fn query(_deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
 mod tests {
     // We need to test instantiate
     // and execute method and
-    // check storage
+    // check storage to make sure state transition is correct
+    
+    // We also need to test edge cases that are checked + few scenarios where
+    // we try to do replay attack and expect it to be prevented by usage of nonce
 }
