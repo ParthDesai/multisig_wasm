@@ -14,7 +14,7 @@ use crate::state::{CURRENT_KEYSET, CURRENT_NONCE};
 use crate::types::SerializableKeySet;
 /*
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:bls_wasm";
+const CONTRACT_NAME: &str = "crates.io:multisig_wasm";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 */
 

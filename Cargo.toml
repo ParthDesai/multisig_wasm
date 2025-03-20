@@ -1,5 +1,5 @@
 [package]
-name = "bls_wasm"
+name = "multisig_wasm"
 version = "0.1.0"
 authors = ["Parth Desai <desaiparth08@gmail.com>"]
 edition = "2021"
