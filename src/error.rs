@@ -29,7 +29,7 @@ pub enum ContractError {
     InvalidMinKeysNeeded { min_keys_needed: u64 },
 
     #[error("Unable to decode signature payload {}", .error)]
-    SignaturePayloadDecodeError { error: serde_json::Error },
+    SignaturePayloadDecodeError { error: serde_json_wasm::ser::Error },
 
     #[error("Invalid signature passed")]
     InvalidSignature,

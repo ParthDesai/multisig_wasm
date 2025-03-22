@@ -10,7 +10,7 @@ pub struct InstantiateMsg {
 
 pub trait Payload {
     fn get_nonce(&self) -> u64;
-    fn get_serialized_payload(&self) -> serde_json::Result<Vec<u8>>;
+    fn get_serialized_payload(&self) -> serde_json_wasm::ser::Result<Vec<u8>>;
 }
 
 #[cw_serde]
@@ -24,8 +24,8 @@ impl Payload for CallPayload {
         self.nonce
     }
 
-    fn get_serialized_payload(&self) -> serde_json::Result<Vec<u8>> {
-        serde_json::to_vec(&self)
+    fn get_serialized_payload(&self) -> serde_json_wasm::ser::Result<Vec<u8>> {
+        serde_json_wasm::to_vec(&self)
     }
 }
 
@@ -41,8 +41,8 @@ impl Payload for UpdateKeySetPayload {
         self.nonce
     }
 
-    fn get_serialized_payload(&self) -> serde_json::Result<Vec<u8>> {
-        serde_json::to_vec(&self)
+    fn get_serialized_payload(&self) -> serde_json_wasm::ser::Result<Vec<u8>> {
+        serde_json_wasm::to_vec(&self)
     }
 }
 

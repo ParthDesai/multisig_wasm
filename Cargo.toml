@@ -45,7 +45,7 @@ cw2 = "2.0.0"
 blst = { version = "0.3.14" }
 schemars = "0.8.16"
 serde = { version = "1.0.197", default-features = false, features = ["derive"] }
-serde_json = { version = "1.0.140", default-features = false }
+serde-json-wasm = { version = "1.0.1", default-features = false }
 thiserror = { version = "1.0.58" }
 bit-vec = { version = "0.8", default-features = false }
 

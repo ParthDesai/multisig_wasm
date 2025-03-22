@@ -75,7 +75,7 @@ fn verify_signature_payload<P: Payload + serde::Serialize>(
     let public_keys = try_parse_public_key(&current_serialized_keyset.public_keys)?;
 
     let serialized_payload =
-        serde_json::to_vec(&payload).map_err(|e| SignaturePayloadDecodeError { error: e })?;
+        serde_json_wasm::to_vec(&payload).map_err(|e| SignaturePayloadDecodeError { error: e })?;
     let is_valid = verify_signature(
         &serialized_payload,
         current_serialized_keyset.min_keys_needed,
