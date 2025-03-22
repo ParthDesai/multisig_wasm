@@ -28,11 +28,13 @@ pub fn instantiate(
     let public_keys = try_parse_public_key(&msg.initial_public_keys)?;
     check_for_duplicates(&public_keys)?;
 
-    if msg.min_keys_needed == 0 {
+    if msg.min_keys_needed == 0 || msg.min_keys_needed as usize > public_keys.len() {
         return Err(ContractError::InvalidMinKeysNeeded {
             min_keys_needed: msg.min_keys_needed,
         });
     }
+
+    CURRENT_NONCE.save(deps.storage, &1)?;
 
     CURRENT_KEYSET.save(
         deps.storage,
@@ -65,7 +67,12 @@ fn verify_signature_payload<P: Payload + serde::Serialize>(
     }
 
     let current_serialized_keyset = CURRENT_KEYSET.load(deps.storage)?;
-    if current_serialized_keyset.public_keys.len() != bit_vec.len() {
+    let expected_bit_vec_size = current_serialized_keyset
+        .public_keys
+        .len()
+        .checked_next_power_of_two()
+        .expect("We cannot have more public keys then usize::MAX; qed");
+    if expected_bit_vec_size != bit_vec.len() {
         return Err(ContractError::MismatchBetweenBitVecAndPublicKeys {
             bit_vec_length: bit_vec.len() as u64,
             public_key_length: current_serialized_keyset.public_keys.len() as u64,
@@ -124,7 +131,9 @@ pub fn execute(
                 let public_keys = try_parse_public_key(&update_key_set.public_keys)?;
                 check_for_duplicates(&public_keys)?;
 
-                if update_key_set.min_keys_needed == 0 {
+                if update_key_set.min_keys_needed == 0
+                    || update_key_set.min_keys_needed as usize > update_key_set.public_keys.len()
+                {
                     return Err(ContractError::InvalidMinKeysNeeded {
                         min_keys_needed: update_key_set.min_keys_needed,
                     });

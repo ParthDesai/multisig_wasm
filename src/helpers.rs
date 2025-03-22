@@ -46,7 +46,7 @@ pub fn check_for_duplicates(public_keys: &Vec<PublicKey>) -> Result<(), Contract
 
     if public_keys.len() != non_duplicate_elements.len() {
         return Err(ContractError::PublicKeyDuplicated {
-            pub_key_index: public_keys.len() - non_duplicate_elements.len(),
+            pub_key_index: non_duplicate_elements.len(),
         });
     }
 
@@ -68,7 +68,7 @@ pub fn try_parse_public_key(public_key_set: &Vec<Binary>) -> Result<Vec<PublicKe
 
     if parsed_public_keys.len() != public_key_set.len() {
         return Err(ContractError::PublicKeyDecodeError {
-            pub_key_index: public_key_set.len() - parsed_public_keys.len(),
+            pub_key_index: parsed_public_keys.len(),
         });
     }
 
