@@ -51,4 +51,4 @@ bit-vec = { version = "0.8", default-features = false }
 
 [dev-dependencies]
 cw-multi-test = "2.0.0"
-rand = { version = "0.8.5", default-features = true }
+rand = { version = "0.9.3", default-features = true }
